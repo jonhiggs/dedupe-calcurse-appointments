@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+CALCURSE_DIR=${CALCURSE_DIR:-${HOME}/.calcurse}
+NOTES_DIR=${NOTES_DIR:-${CALCURSE_DIR}/notes}
+APTS_FILE=${APTS_FILE:-${CALCURSE_DIR}/apts}
+
+awk \
+  '
+    BEGIN { FPAT = "[^|]+" }
+
+    {
+      note=$1
+      sub(/.*>/, "", note)
+      time=$1
+      sub(/>[0-9a-f]{40} $/, "", time)
+      message=$2
+    }
+
+    {
+      event[time,note] = $0
+    }
+
+    END {
+      for (i in event) {
+        print event[i]
+      }
+    }
+  ' \
+ ${APTS_FILE} \
+ > ${APTS_FILE}.dedupe
+
+mv ${APTS_FILE}.dedupe ${APTS_FILE}
